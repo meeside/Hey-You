@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hey You</title>
+  <style>
+    :root {
+      --bg-color: #0d0f26;
+      --accent-color: #8ab4f8;
+      --text-main: #ffffff;
+      --text-sub: #aaddff;
+      --overlay-opacity: 0.6;
+      --box-bg: rgba(0, 0, 0, 0.6);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('bbb.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text-main);
+      min-height: 100vh;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, var(--overlay-opacity));
+      z-index: 0;
+    }
+    header, nav, section {
+      position: relative; z-index: 1;
+      text-align: center; padding: 6rem 2rem;
+    }
+    nav {
+      background-color: rgba(0, 0, 0, 0.85);
+      padding: 1rem; position: sticky; top: 0; z-index: 2;
+    }
+    nav a {
+      color: var(--text-sub);
+      text-decoration: none;
+      margin: 0 1.2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+    nav a:hover { color: var(--text-main); }
+    header { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+    header h1 { font-size: 3rem; color: var(--text-main); }
+    header h2 { font-size: 2rem; color: var(--accent-color); margin-top: 0.5rem; }
+    section h2 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--accent-color); }
+    .playlist-wrapper { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2rem; }
+    .playlist-cover {
+      width: 280px; height: 280px;
+      background: url('bb.jpeg') center/cover no-repeat;
+      border: 3px solid var(--accent-color);
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.7);
+    }
+    .playlist-box, .message-box {
+      background-color: var(--box-bg);
+      padding: 1.5rem;
+      border-radius: 10px;
+      max-width: 400px;
+      text-align: left;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+    .playlist-box button {
+      background: var(--accent-color);
+      border: none; color: black;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      cursor: pointer;
+    }
+    .playlist-songs { display: none; margin-top: 1rem; }
+    .playlist-songs.show { display: block; }
+    ol { padding-left: 1rem; }
+    .message-container {
+      display: flex; justify-content: center;
+      flex-wrap: wrap; gap: 2rem; margin-top: 2rem;
+    }
+    /* icon-button base */
+    .icon-button {
+      background: none; border: none; padding: 0.5rem;
+      cursor: pointer; display: inline-flex;
+      align-items: center; justify-content: center;
+    }
+    .icon-button svg {
+      width: 28px; height: 28px;
+      stroke: var(--accent-color);
+      fill: none; stroke-width: 2;
+      transition: stroke 0.3s;
+    }
+    .icon-button:hover svg { stroke: var(--text-main); }
+
+    .video-container{
+      display: none; opacity: 0;
+      transition: opacity 0.5s ease; margin-top: 1rem;
+    }
+    .video-container.show {
+      display: block; opacity: 1;
+    }
+    .video-container video {
+      width: 100%; height: auto;
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    .visualizer-container {
+      width: 100%; overflow: hidden;
+      background-color: var(--box-bg);
+      border: 3px solid var(--accent-color);
+      border-radius: 12px;
+      margin: 20px auto; padding: 1rem;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+      position: relative;
+    }
+    .filmstrip { display: flex; gap: 10px; padding: 10px 0; }
+    .filmstrip img {
+      height: 150px; border-radius: 12px;
+      border: 3px solid var(--accent-color);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .filmstrip img.selected {
+      transform: scale(1.1); border-color: #9c27b0; z-index: 2;
+    }
+
+    .view-all-button {
+      background: var(--accent-color);
+      border: none; color: black;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      margin: 1.5rem auto;
+      cursor: pointer;
+      font-size: 1rem;
+      display: block; text-align: center;
+    }
+    .grid-gallery { display: none; flex-wrap: wrap; gap: 10px; margin-top: 20px; justify-content: center; }
+    .grid-gallery.show { display: flex; }
+    .grid-gallery img {
+      width: 150px; border-radius: 12px;
+      border: 3px solid var(--accent-color);
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+    }
+
+    html { scroll-behavior: smooth; }
+    @media (max-width: 768px) {
+      .message-container { flex-direction: column; }
+      .playlist-wrapper { flex-direction: column; }
+      .filmstrip img { width: 180px; }
+      .grid-gallery img { width: 150px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#">Hey You</a>
+    <a href="#home">Home</a>
+    <a href="#songs">Songs</a>
+    <a href="#message">Message</a>
+    <a href="#visualizer">Visualizer</a>
+  </nav>
+
+  <header id="home">
+    <h1>Happy Birthday 🌱</h1>
+    <h2>5 May</h2>
+  </header>
+
+  <section id="songs">
+    <h2>Songs</h2>
+    <div class="playlist-wrapper">
+      <div class="playlist-cover"></div>
+      <div class="playlist-box">
+        <h3>Our Vibes Playlist</h3>
+        <button onclick="togglePlaylist(this)">Show Playlist</button>
+        <button onclick="window.open('https://open.spotify.com/playlist/1oV15sh9IYcUzF6QyVMfqL?si=1326bc5e10994821','_blank')">Go to Spotify</button>
+        <ol class="playlist-songs" id="playlist">
+          <li>Serendipity</li><li>Your eyes tell</li><li>Best of me</li><li>Stay alive</li><li>yours</li><li>Tomorrow</li><li>I don't know</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="message">
+    <h2>Message</h2>
+    <div class="message-container">
+
+      <!-- Video 1 -->
+      <div class="message-box">
+        <button class="icon-button" onclick="toggleVideo()">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <polygon points="10,8 16,12 10,16"/>
+          </svg>
+        </button>
+        <div class="video-container" id="videoContainer">
+          <video controls>
+            <source src="ays.mp4" type="video/mp4" />
+          </video>
+        </div>
+      </div>
+
+      <!-- Download Photo -->
+      <div class="message-box">
+        <a href="for you.jpg" download class="icon-button" aria-label="Download Photo">
+          <svg viewBox="0 0 24 24">
+            <line x1="12" y1="3" x2="12" y2="15"/>
+            <polyline points="5,12 12,19 19,12"/>
+            <line x1="5" y1="21" x2="19" y2="21"/>
+          </svg>
+        </a>
+      </div>
+      
+      <!-- Video 2 -->
+       <div class="message-box">
+        <button class="icon-button" onclick="toggleVideo2()">
+          <svg viewBox="0 0 24 24">
+            <rect x="2" y="5" width="20" height="14" rx="2"/>
+            <polygon points="10,8 16,12 10,16"/>
+          </svg>
+        </button>
+        <div class="video-container video-4-3" id="videoContainer2">
+          <video controls>
+            <source src="wish.mp4" type="video/mp4" />
+          </video>
+  </div>
+</div>
+
+
+    </div>
+  </section>
+  
+  <section id="visualizer">
+    <h2>Visualizer</h2>
+    <div class="visualizer-container" id="scroll-container">
+      <div class="filmstrip" id="filmstrip">
+        <img src="pic1.jpg" alt="Memory 1" onclick="selectImage(this)">
+        <img src="pic2.jpg" alt="Memory 2" onclick="selectImage(this)">
+        <img src="pic3.jpg" alt="Memory 3" onclick="selectImage(this)">
+        <img src="pic4.jpg" alt="Memory 4" onclick="selectImage(this)">
+        <img src="pic5.jpg" alt="Memory 5" onclick="selectImage(this)">
+        <img src="pic6.jpg" alt="Memory 6" onclick="selectImage(this)">
+        <img src="pic7.jpg" alt="Memory 7" onclick="selectImage(this)">
+        <img src="pic8.jpg" alt="Memory 8" onclick="selectImage(this)">
+        <img src="pic9.jpg" alt="Memory 9" onclick="selectImage(this)">
+        <img src="pic10.jpg" alt="Memory 10" onclick="selectImage(this)">
+        <img src="pic11.jpg" alt="Memory 11" onclick="selectImage(this)">
+        <img src="pic12.jpg" alt="Memory 12" onclick="selectImage(this)">
+        <img src="pic13.jpg" alt="Memory 13" onclick="selectImage(this)">
+        <img src="pic14.jpg" alt="Memory 14" onclick="selectImage(this)">
+        <img src="pic15.jpg" alt="Memory 15" onclick="selectImage(this)">
+        <img src="pic16.jpg" alt="Memory 16" onclick="selectImage(this)">
+        <img src="pic17.jpg" alt="Memory 17" onclick="selectImage(this)">
+        <img src="pic18.jpg" alt="Memory 18" onclick="selectImage(this)">
+        <img src="pic19.jpg" alt="Memory 19" onclick="selectImage(this)">
+        <img src="pic20.jpg" alt="Memory 20" onclick="selectImage(this)">
+        <img src="pic21.jpg" alt="Memory 21" onclick="selectImage(this)">
+        <img src="pic22.jpg" alt="Memory 22" onclick="selectImage(this)">
+        <img src="pic23.jpg" alt="Memory 23" onclick="selectImage(this)">
+        <img src="pic24.jpg" alt="Memory 24" onclick="selectImage(this)">
+        <img src="pic25.jpg" alt="Memory 25" onclick="selectImage(this)">
+        <img src="pic26.jpg" alt="Memory 26" onclick="selectImage(this)">
+        <img src="pic27.jpg" alt="Memory 27" onclick="selectImage(this)">
+        <img src="pic28.jpg" alt="Memory 28" onclick="selectImage(this)">
+        <img src="pic29.jpg" alt="Memory 29" onclick="selectImage(this)">
+        <img src="pic30.jpg" alt="Memory 30" onclick="selectImage(this)">
+        <img src="pic31.jpg" alt="Memory 31" onclick="selectImage(this)">
+        <img src="pic32.jpg" alt="Memory 32" onclick="selectImage(this)">
+        <img src="pic33.jpg" alt="Memory 33" onclick="selectImage(this)">
+        <img src="pic34.jpg" alt="Memory 34" onclick="selectImage(this)">
+        <img src="pic35.jpg" alt="Memory 35" onclick="selectImage(this)">
+        <img src="pic36.jpg" alt="Memory 36" onclick="selectImage(this)">
+        <img src="pic37.jpg" alt="Memory 37" onclick="selectImage(this)">
+        <img src="pic38.jpg" alt="Memory 38" onclick="selectImage(this)">
+        <img src="pic39.jpg" alt="Memory 39" onclick="selectImage(this)">
+        <img src="pic40.jpg" alt="Memory 40" onclick="selectImage(this)">
+      </div>
+    </div>
+    <button class="view-all-button" onclick="toggleGallery()">View All</button>
+    <div class="grid-gallery" id="gallery">
+      <img src="pic1.jpg" alt="Memory 1">
+      <img src="pic2.jpg" alt="Memory 2">
+      <img src="pic3.jpg" alt="Memory 3">
+      <img src="pic4.jpg" alt="Memory 4">
+      <img src="pic5.jpg" alt="Memory 5">
+      <img src="pic6.jpg" alt="Memory 6">
+      <img src="pic7.jpg" alt="Memory 7">
+      <img src="pic8.jpg" alt="Memory 8">
+      <img src="pic9.jpg" alt="Memory 9">
+      <img src="pic10.jpg" alt="Memory 10">
+      <img src="pic11.jpg" alt="Memory 11">
+      <img src="pic12.jpg" alt="Memory 12">
+      <img src="pic13.jpg" alt="Memory 13">
+      <img src="pic14.jpg" alt="Memory 14">
+      <img src="pic15.jpg" alt="Memory 15">
+      <img src="pic16.jpg" alt="Memory 16">
+      <img src="pic17.jpg" alt="Memory 17">
+      <img src="pic18.jpg" alt="Memory 18">
+      <img src="pic19.jpg" alt="Memory 19">
+      <img src="pic20.jpg" alt="Memory 20">
+      <img src="pic21.jpg" alt="Memory 21">
+      <img src="pic22.jpg" alt="Memory 22">
+      <img src="pic23.jpg" alt="Memory 23">
+      <img src="pic24.jpg" alt="Memory 24">
+      <img src="pic25.jpg" alt="Memory 25">
+      <img src="pic26.jpg" alt="Memory 26">
+      <img src="pic27.jpg" alt="Memory 27">
+      <img src="pic28.jpg" alt="Memory 28">
+      <img src="pic29.jpg" alt="Memory 29">
+      <img src="pic30.jpg" alt="Memory 30">
+      <img src="pic31.jpg" alt="Memory 31">
+      <img src="pic32.jpg" alt="Memory 32">
+      <img src="pic33.jpg" alt="Memory 33">
+      <img src="pic34.jpg" alt="Memory 34">
+      <img src="pic35.jpg" alt="Memory 35">
+      <img src="pic36.jpg" alt="Memory 36">
+      <img src="pic37.jpg" alt="Memory 37">
+      <img src="pic38.jpg" alt="Memory 38">
+      <img src="pic39.jpg" alt="Memory 39">
+      <img src="pic40.jpg" alt="Memory 40">
+    </div>
+  </section>
+
+  <script>
+
+    function togglePlaylist(button) {
+      const playlist = document.getElementById('playlist');
+      playlist.classList.toggle('show');
+      button.textContent = playlist.classList.contains('show') ? 'Hide Playlist' : 'Show Playlist';
+    }
+
+    function toggleVideo() {
+      const videoContainer = document.getElementById('videoContainer');
+      videoContainer.classList.toggle('show');
+    }
+
+    function toggleVideo2() {
+      const videoContainer = document.getElementById('videoContainer2');
+      videoContainer.classList.toggle('show');
+    }
+
+    function toggleGallery() {
+      const gridGallery = document.getElementById('gridGallery');
+      gridGallery.classList.toggle('show');
+    }
+  </script>
+
+</body>
+</html>
